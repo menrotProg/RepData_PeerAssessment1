@@ -1,51 +1,48 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
-```{r}
+
+```r
 rm(list=ls())
 options(stringsAsFactors = FALSE)
 
 if (!is.element("ggplot2",installed.packages()) ) {install.packages("ggplot2")}
 library(ggplot2)
-
 ```
 
 
 ## Loading and preprocessing the data
 
-```{r Loading Data}
 
+```r
 if (!file.exists("activity.csv")) {unzip("activity.zip")}
 
 Activity<-read.csv("activity.csv")
-
 ```
 
 
 ## What is mean total number of steps taken per day?
-```{r Mean per Day}
+
+```r
 totDaily<-tapply(Activity$steps,Activity$date,sum,na.rm=TRUE)
 q <- qplot(totDaily, geom="histogram", binwidth = 2200, fill=I("blue"))
 
 print(q)
+```
 
+![](PA1_template_files/figure-html/Mean per Day-1.png) 
+
+```r
 # Calculate the meanand Median
 
 MeanDailySteps<-mean(totDaily)
 MedianDailySteps<-median(totDaily)
-
-
 ```
-The mean of the number of steps taken per day (ignoring NA) is `r MeanDailySteps`  
-The median of the number of steps taken per day (ignoring NA) is `r MedianDailySteps`  
+The mean of the number of steps taken per day (ignoring NA) is 9354.2295082  
+The median of the number of steps taken per day (ignoring NA) is 10395  
 
 ## What is the average daily activity pattern?
-```{r Daily activity pattern}
 
+```r
 ##    plot (i.e. type = "l") of the 5-minute interval (x-axis) 
 ##    and the average number of steps taken, averaged across all days (y-axis)
 ##    compute the plot
@@ -57,25 +54,26 @@ forPlot <- data.frame(Time=levels(factor(Activity$interval)),AvgSteps=as.numeric
 
 plot (forPlot$Time,forPlot$AvgSteps,type="l",main="Daily Average no.of Steps per Time Interval",
       ylab="Avergae number of Steps",xlab="Time of  Day of the Interval")
-
-
-TimeOfMaxAverage <- forPlot[which.max( forPlot[,2]),1]
-
-
 ```
 
-The time of day of the interval with maximum avergae steps is `r TimeOfMaxAverage`  
+![](PA1_template_files/figure-html/Daily activity pattern-1.png) 
+
+```r
+TimeOfMaxAverage <- forPlot[which.max( forPlot[,2]),1]
+```
+
+The time of day of the interval with maximum avergae steps is 835  
 
 ## Imputing missing values
 
-```{r Imputing missing values 1}
 
+```r
 NumofNA <- sum(!complete.cases(Activity))
 ```
-total number of missing cases is `r NumofNA`  
+total number of missing cases is 2304  
 
-```{r Imputing missing values 2}
 
+```r
 Clean <- Activity
 
 for (i in 1:length(Activity[,1])) {
@@ -90,17 +88,19 @@ totDailyClean<-tapply(Clean$steps,Clean$date,sum,na.rm=TRUE)
 q <- qplot(totDailyClean, geom="histogram", binwidth = 2200, fill=I("blue"))
 
 print(q)
+```
 
+![](PA1_template_files/figure-html/Imputing missing values 2-1.png) 
+
+```r
 # Calculate the mean and Median
 
 MeanDailyStepsClean<-mean(totDailyClean)
 MedianDailyStepsClean<-median(totDailyClean)
-
-
 ```
 
-The mean of the clean data is `r MeanDailyStepsClean`  
-The median of the clean data is `r MedianDailyStepsClean`  
+The mean of the clean data is 1.0766189\times 10^{4}  
+The median of the clean data is 1.0766189\times 10^{4}  
 
 
 
@@ -110,7 +110,8 @@ The median of the clean data is `r MedianDailyStepsClean`
 
 Create a new factor variable in the dataset with two levels - "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r New factor weekend and weekdays}
+
+```r
 Clean$day <- "weekday"
 for (i in 1:length(Clean[,1])) {
   if (as.POSIXlt(Clean[i,"date"])$wday==6 | as.POSIXlt(Clean[i,"date"])$wday==0) {
