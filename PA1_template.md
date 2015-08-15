@@ -7,6 +7,21 @@ options(stringsAsFactors = FALSE)
 
 if (!is.element("ggplot2",installed.packages()) ) {install.packages("ggplot2")}
 library(ggplot2)
+
+if (!is.element("sqldf",installed.packages()) ) {install.packages("sqldf")}
+library(sqldf)
+```
+
+```
+## Loading required package: gsubfn
+## Loading required package: proto
+## Loading required package: RSQLite
+## Loading required package: DBI
+```
+
+```r
+if (!is.element("tcltk",installed.packages()) ) {install.packages("tcltk")}
+library(tcltk)
 ```
 
 
@@ -32,7 +47,7 @@ print(q)
 ![](PA1_template_files/figure-html/Mean per Day-1.png) 
 
 ```r
-# Calculate the meanand Median
+# Calculate the mean and Median
 
 MeanDailySteps<-mean(totDaily)
 MedianDailySteps<-median(totDaily)
@@ -118,7 +133,46 @@ for (i in 1:length(Clean[,1])) {
     Clean[i, "day"] <- "weekend"
   }
 } 
-  
-Clean$day <- as.factor(Clean$day)
 ```
+
+Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+
+
+
+```r
+Clean$day <- as.factor(Clean$day)
+
+# Create data frames for each type of day
+
+CleanWday<-sqldf("SELECT * FROM Clean WHERE day = 'weekday'")
+CleanWend<-sqldf("SELECT * FROM Clean WHERE day = 'weekend'")
+
+
+# Calculate the weekday averages
+AvgByInterval<-tapply(CleanWday$steps,as.factor(CleanWday$interval),mean, na.rm=TRUE)
+forPlotD <- data.frame(Time=levels(factor(CleanWday$interval)),AvgSteps=as.numeric(AvgByInterval), TypeOfDay="weekday")
+
+# Calculate the weekend averages
+AvgByInterval<-tapply(CleanWend$steps,as.factor(CleanWend$interval),mean, na.rm=TRUE)
+forPlotE <- data.frame(Time=levels(factor(CleanWend$interval)),AvgSteps=as.numeric(AvgByInterval), TypeOfDay="weekend")
+
+# Merge dataframes
+forplot <- rbind(forPlotD, forPlotE)
+
+# Covert the times from char to numeric value
+forplot$Time <- as.numeric(forplot$Time)
+
+
+## Plot multifaceted plot
+ 
+facets <- ggplot(forplot,aes(Time, AvgSteps ))
+facets <- facets + geom_line(aes(group=TypeOfDay, color = TypeOfDay))
+facets <- facets + facet_grid(TypeOfDay~.)
+facets <- facets + labs(y="Average Number of Steps", x="Time of Day (in 5 min intervals)", 
+                       title=("activity patterns between weekdays and weekends") )
+
+print (facets)
+```
+
+![](PA1_template_files/figure-html/plot averaged across all weekday days or weekend days-1.png) 
 
